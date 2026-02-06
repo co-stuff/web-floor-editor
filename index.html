@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Floor Editor - DMAP</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.170.0/build/three.module.js"
+    }
+  }
+  </script>
+</head>
+
+<body>
+  <div id="app">
+    <div id="menuBar">
+      <div class="menu-item" data-menu="file">
+        <span class="menu-label">File</span>
+        <div class="menu-dropdown">
+          <button data-action="open">Open<kbd>Ctrl+O</kbd></button>
+          <button data-action="save" disabled>Save<kbd>Ctrl+S</kbd></button>
+          <button data-action="saveAs" disabled>Save As...</button>
+        </div>
+      </div>
+      <div class="menu-item" data-menu="edit">
+        <span class="menu-label">Edit</span>
+        <div class="menu-dropdown">
+          <button data-action="clearSel" disabled>Clear Selection<kbd>Esc</kbd></button>
+          <button data-action="selectAll" disabled>Select All<kbd>Ctrl+A</kbd></button>
+        </div>
+      </div>
+      <div class="menu-item" data-menu="view">
+        <span class="menu-label">View</span>
+        <div class="menu-dropdown">
+          <button data-action="toggleGrid" class="checked">Show Grid</button>
+          <button data-action="toggleElev" class="checked">Show Elevation</button>
+          <button data-action="toggleBlk" class="checked">Show Blocked</button>
+          <hr>
+          <button data-action="toggleIso">Isometric Mode</button>
+          <hr>
+          <button data-action="goTo" disabled>Go To...<kbd>Ctrl+G</kbd></button>
+          <button data-action="centerMap" disabled>Center Map<kbd>Home</kbd></button>
+          <button data-action="fitView" disabled>Fit to View<kbd>0</kbd></button>
+        </div>
+      </div>
+      <div class="menu-item" data-menu="help">
+        <span class="menu-label">Help</span>
+        <div class="menu-dropdown">
+          <button data-action="about">About</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="mainContent">
+      <div id="viewport">
+        <canvas id="overlayCanvas"></canvas>
+        <div id="noFile">No file loaded. Use File &gt; Open to load a DMAP file.</div>
+      </div>
+      <div id="panel">
+
+        <div class="imgui-window">
+          <div class="imgui-title">Properties</div>
+          <div class="imgui-body">
+            <div id="panelHint">
+              <div class="imgui-text-dim">Click a cell to edit</div>
+              <div class="imgui-text-dim">Ctrl+Drag for box select</div>
+              <div class="imgui-text-dim">Shift+Click to add</div>
+            </div>
+            <div id="panelSel" style="display:none">
+              <div id="selInfo" class="imgui-text"></div>
+              <hr class="imgui-separator">
+              <div class="imgui-row">
+                <label>Blocked</label>
+                <input type="number" id="eBlk" class="imgui-input imgui-input-sm" min="0" max="1" value="0">
+                <button id="aBlk" class="imgui-btn imgui-btn-sm">Apply</button>
+              </div>
+              <div class="imgui-row">
+                <label>Surface</label>
+                <input type="number" id="eSrf" class="imgui-input imgui-input-sm" min="0" max="65535" value="0">
+                <button id="aSrf" class="imgui-btn imgui-btn-sm">Apply</button>
+              </div>
+              <div class="imgui-row">
+                <label>Elevation</label>
+                <input type="number" id="eElv" class="imgui-input imgui-input-sm" min="-32768" max="32767" value="0">
+                <button id="aElv" class="imgui-btn imgui-btn-sm">Apply</button>
+              </div>
+              <div class="imgui-btn-row">
+                <button id="bClearSel" class="imgui-btn imgui-btn-sm">Clear Selection</button>
+                <button id="bGoSel" class="imgui-btn imgui-btn-sm">Go To</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="imgui-window">
+          <div class="imgui-title">Navigation</div>
+          <div class="imgui-body">
+            <div class="imgui-row">
+              <label>X</label>
+              <input type="number" id="gX" class="imgui-input imgui-input-sm" value="0">
+              <label>Y</label>
+              <input type="number" id="gY" class="imgui-input imgui-input-sm" value="0">
+              <button id="bGo" class="imgui-btn imgui-btn-sm">Go</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="imgui-window">
+          <div class="imgui-title">Display</div>
+          <div class="imgui-body">
+            <label class="imgui-checkbox"><input type="checkbox" id="cGrid" checked><span class="cb"></span>Show
+              Grid</label>
+            <label class="imgui-checkbox"><input type="checkbox" id="cElev" checked><span class="cb"></span>Show
+              Elevation</label>
+            <label class="imgui-checkbox"><input type="checkbox" id="cBlk" checked><span class="cb"></span>Show
+              Blocked</label>
+          </div>
+        </div>
+
+        <div class="imgui-window">
+          <div class="imgui-title">File Status</div>
+          <div class="imgui-body">
+            <div id="fStatus" class="imgui-text">No file open</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div id="statusBar">
+      <span id="sHover">Hover: (-1, -1)</span>
+      <span id="sSel">Sel: 0</span>
+      <span id="sZoom">Zoom: 1.0</span>
+      <span id="sLod">LOD: x1</span>
+      <span id="sMode">2D</span>
+      <span id="sFps">FPS: 0</span>
+    </div>
+  </div>
+
+  <dialog id="dlgGoTo">
+    <div class="dlg-title">Go To Position</div>
+    <div class="dlg-body">
+      <div class="drow"><label>X:</label><input type="number" id="dGX" value="0"></div>
+      <div class="drow"><label>Y:</label><input type="number" id="dGY" value="0"></div>
+      <div id="dMapSize"></div>
+      <div class="dactions">
+        <button id="dGo">Go</button>
+        <button id="dCenter">Center Map</button>
+        <button id="dCancel">Cancel</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="dlgAbout">
+    <div class="dlg-title">Floor Editor</div>
+    <div class="dlg-body">
+      <div class="imgui-text">Conquer Online DMAP Editor</div>
+      <div class="imgui-text">Version: 2.1</div>
+      <div class="imgui-text-dim">Thanks to: Spirited</div>
+      <div class="dactions"><button id="dAboutOk">OK</button></div>
+    </div>
+  </dialog>
+
+  <input type="file" id="fileIn" accept=".dmap" style="display:none">
+
+  <script type="module" src="js/main.js"></script>
+</body>
+
+</html>
