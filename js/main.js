@@ -521,6 +521,30 @@ async function DiscoverMaps() {
         elDropdown.appendChild(btn);
       }
     }
+
+    const elList = document.getElementById('mapList');
+    const elItems = document.getElementById('mapListItems');
+    elItems.innerHTML = '';
+    for (const szGroup of vecGroupKeys) {
+      const header = document.createElement('p');
+      header.className = 'map-group-header';
+      header.textContent = szGroup;
+      elItems.appendChild(header);
+      for (const szName of mapGroups.get(szGroup)) {
+        const btn = document.createElement('button');
+        btn.className = 'map-item';
+        btn.textContent = szName;
+        btn.addEventListener('click', async () => {
+          btn.classList.add('loading');
+          btn.textContent = szName + ' ...';
+          await LoadMapByName(szName);
+          btn.classList.remove('loading');
+          btn.textContent = szName;
+        });
+        elItems.appendChild(btn);
+      }
+    }
+    elList.style.display = '';
   } catch (e) {}
 }
 

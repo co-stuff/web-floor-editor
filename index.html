@@ -64,7 +64,13 @@
     <div id="mainContent">
       <div id="viewport">
         <canvas id="overlayCanvas"></canvas>
-        <div id="noFile">No file loaded. Use File &gt; Open to load a DMAP file.</div>
+        <div id="noFile">
+          <div id="noFileMsg">No file loaded. Use File &gt; Open to load a DMAP file.</div>
+          <div id="mapList" style="display:none">
+            <div id="mapListTitle">Available Maps</div>
+            <div id="mapListItems"></div>
+          </div>
+        </div>
       </div>
       <div id="panel">
 
