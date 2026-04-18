@@ -27,9 +27,10 @@ let g_flLastTime = 0, g_nFrames = 0, g_flFpsAccum = 0, g_flFPS = 0;
 
 let g_openMenu = null;
 
-async function OpenFile(file) {
+async function OpenFile(file, szNameOverride) {
   const pDmap = new CDMapFile();
   if (!(await pDmap.Load(file))) return;
+  if (szNameOverride) pDmap.m_szFilename = szNameOverride;
 
   g_pDmap = pDmap;
   g_selBits.Init(pDmap.GetWidth(), pDmap.GetHeight());
@@ -470,3 +471,57 @@ document.querySelectorAll('.imgui-title').forEach(t => {
 });
 
 requestAnimationFrame(OnFrame);
+
+async function LoadMapByName(szName) {
+  try {
+    const resp = await fetch('maps/' + szName + '.dmap');
+    if (!resp.ok) { console.error('[LoadMapByName] not found:', szName); return false; }
+    const buf = await resp.arrayBuffer();
+    await OpenFile(buf, szName + '.dmap');
+    return true;
+  } catch (e) { console.error('[LoadMapByName]', e); return false; }
+}
+
+async function DiscoverMaps() {
+  const params = new URLSearchParams(window.location.search);
+  const szDirectMap = params.get('map');
+  if (szDirectMap) { if (await LoadMapByName(szDirectMap)) return; }
+
+  try {
+    const resp = await fetch('maps/maps.json');
+    if (!resp.ok) return;
+    const vecMaps = await resp.json();
+    if (!Array.isArray(vecMaps) || vecMaps.length === 0) return;
+
+    const mapGroups = new Map();
+    for (const szName of vecMaps) {
+      const match = szName.match(/-(\d{3,})$/);
+      const szGroup = match ? 'v' + match[1] : 'Others';
+      if (!mapGroups.has(szGroup)) mapGroups.set(szGroup, []);
+      mapGroups.get(szGroup).push(szName);
+    }
+    const vecGroupKeys = [...mapGroups.keys()].sort((a, b) => {
+      if (a === 'Others') return 1;
+      if (b === 'Others') return -1;
+      return a.localeCompare(b);
+    });
+
+    const elDropdown = document.getElementById('mapsDropdown');
+    const elEmpty = document.getElementById('mapsDropdownEmpty');
+    elEmpty.style.display = 'none';
+    for (const szGroup of vecGroupKeys) {
+      const sep = document.createElement('div');
+      sep.className = 'menu-dropdown-group';
+      sep.textContent = szGroup;
+      elDropdown.appendChild(sep);
+      for (const szName of mapGroups.get(szGroup)) {
+        const btn = document.createElement('button');
+        btn.textContent = szName;
+        btn.addEventListener('click', async () => { CloseMenus(); await LoadMapByName(szName); });
+        elDropdown.appendChild(btn);
+      }
+    }
+  } catch (e) {}
+}
+
+DiscoverMaps();

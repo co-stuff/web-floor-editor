@@ -9,7 +9,7 @@
   <script type="importmap">
   {
     "imports": {
-      "three": "https://unpkg.com/three@0.170.0/build/three.module.js"
+      "three": "https://unpkg.com/three@0.183.0/build/three.module.min.js"
     }
   }
   </script>
@@ -31,6 +31,12 @@
         <div class="menu-dropdown">
           <button data-action="clearSel" disabled>Clear Selection<kbd>Esc</kbd></button>
           <button data-action="selectAll" disabled>Select All<kbd>Ctrl+A</kbd></button>
+        </div>
+      </div>
+      <div class="menu-item" data-menu="maps">
+        <span class="menu-label">Maps</span>
+        <div class="menu-dropdown" id="mapsDropdown">
+          <div id="mapsDropdownEmpty" class="menu-dropdown-empty">No maps available</div>
         </div>
       </div>
       <div class="menu-item" data-menu="view">

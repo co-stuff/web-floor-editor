@@ -140,6 +140,31 @@ body {
   margin: 4px 8px;
 }
 
+.menu-dropdown-empty {
+  padding: 6px 12px;
+  color: var(--imgui-text-dim);
+  font-size: 12px;
+}
+
+.menu-dropdown-group {
+  font-size: 10px;
+  color: var(--imgui-text-dim);
+  padding: 6px 10px 2px;
+  border-top: 1px solid var(--imgui-separator);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: default;
+}
+
+.menu-dropdown-group:first-child {
+  border-top: none;
+}
+
+#mapsDropdown {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
 #mainContent {
   display: grid;
   grid-template-columns: 1fr 280px;
