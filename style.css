@@ -165,6 +165,68 @@ body {
   overflow-y: auto;
 }
 
+#mapList {
+  margin-top: 16px;
+}
+
+#mapListTitle {
+  font-size: 13px;
+  color: var(--imgui-text);
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--imgui-separator);
+  padding-bottom: 6px;
+}
+
+#mapListItems {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 300px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+#mapListItems::-webkit-scrollbar { width: 6px; background: var(--imgui-bg); }
+#mapListItems::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+#mapListItems::-webkit-scrollbar-thumb:hover { background: #666; }
+
+.map-item {
+  background: var(--imgui-window);
+  border: 1px solid var(--imgui-border);
+  border-radius: var(--imgui-rounding);
+  padding: 8px 14px;
+  color: var(--imgui-text);
+  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: background 0.1s;
+}
+
+.map-item:hover {
+  background: var(--imgui-header-hover);
+  border-color: var(--imgui-check);
+}
+
+.map-item.loading {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.map-group-header {
+  font-size: 11px;
+  color: var(--imgui-text-dim);
+  padding: 6px 4px 2px;
+  border-bottom: 1px solid var(--imgui-separator);
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.map-group-header:first-child {
+  margin-top: 0;
+}
+
 #mainContent {
   display: grid;
   grid-template-columns: 1fr 280px;
